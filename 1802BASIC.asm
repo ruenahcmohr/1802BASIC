@@ -38,26 +38,36 @@
 ;
 
 8400 C4           NOP            ; No operation
-8401 30 B0        BR  84B0H      ; Short branch
+8401 30 B0        BR  84B0H      ; GO SAVE REGISTERS
 
-8403 C0 84 ED     LBR 84EDH      ; Long branch
+8403 C0 84 ED     LBR 84EDH      
 
-8406 C0 01 00     LBR 0100H      ; Long branch   "read" (?)
+8406 C0 01 00     LBR 0100H      ; JUMP TO KEY-INPUT ROUTINE
 
-8409 C0 01 03     LBR 0103H      ; Long branch    "write"(?)
+8409 C0 01 03     LBR 0103H      ; JUMP TO KEY-OUTPUT ROUTINE
 
-840C C0 01 06     LBR 0106H      ; Long branch     "check for break"(?)
+840C C0 01 06     LBR 0106H      ; JUMP TO BREAK-DETECTION ROUTINE
 
 
-840F 08           LDN R8         ; Load D with (R8)
-8410 18           INC R8         ; Increment (R8)
-8411 00           IDL            ; Idle or wait for interrupt or DMA request
-8412 00           IDL            ; Idle or wait for interrupt or DMA request
-8413 19           INC R9         ; Increment (R9)
+840F 08           DB   08H	; "BACKSPACE" CHARACTER
+8410 18           DB   18H	; "CANCEL" CHARACTER
+
+8411 00           DB   00H	; PAD CODE:	   
+                        ;	      ^-------------LSD=# OF PAD CHARS AFTER CR
+                        ;	     ^--------------MSD=8: PAD CHAR.IS DELETE (FFH)
+                        ;			       =0: PAD CHAR. IS NULL (00)
+ 
+8412 00           DB   00H	; TAPE MODE
+8413 19           DB   19H	; SPARE STACK
+
 8414 30 22        BR  8422H      ; Short branch
 8416 30 20        BR  8420H      ; Short branch
+
+; POKE
 8418 58           STR R8         ; Store D to (R8)
 8419 D5           SEP R5         ; Set P=R5 as program counter
+
+
 841A 8A           GLO RA         ; Get low register RA
 841B 81           GLO R1         ; Get low register R1
 841C 02           LDN R2         ; Load D with (R2)
@@ -65,11 +75,17 @@
 841E 00           IDL            ; Idle or wait for interrupt or DMA request
 841F 00           IDL            ; Idle or wait for interrupt or DMA request
 8420 48           LDA R8         ; Load D from (R8), increment R8
-8421 38 9D        SKP            ; Skip next byte
+8421 38 
+
+; PEEK
+8422 9D           GHI RD         ; Get high register RD
 8423 BA           PHI RA         ; Put high register RA
 8424 48           LDA R8         ; Load D from (R8), increment R8
 8425 D5           SEP R5         ; Set P=R5 as program counter
+
+
 8426 C0 8A 51     LBR 8A51H      ; Long branch
+
 8429 D3           SEP R3         ; Set P=R3 as program counter
 842A BF           PHI RF         ; Put high register RF
 842B E2           SEX R2         ; Set X=R2 as datapointer
@@ -87,6 +103,8 @@
 8437 A3           PLO R3         ; Put low register R3
 8438 9F           GHI RF         ; Get high register RF
 8439 30 29        BR  8429H      ; Short branch
+
+
 843B D3           SEP R3         ; Set P=R3 as program counter
 843C BF           PHI RF         ; Put high register RF
 843D E2           SEX R2         ; Set X=R2 as datapointer
@@ -101,6 +119,8 @@
 8446 A6           PLO R6         ; Put low register R6
 8447 9F           GHI RF         ; Get high register RF
 8448 30 3B        BR  843BH      ; Short branch
+
+
 844A D3           SEP R3         ; Set P=R3 as program counter
 844B 43           LDA R3         ; Load D from (R3), increment R3
 844C AD           PLO RD         ; Put low register RD
@@ -109,202 +129,180 @@
 8450 4D           LDA RD         ; Load D from (RD), increment RD
 8451 ED           SEX RD         ; Set X=RD as datapointer
 8452 30 4A        BR  844AH      ; Short branch
-8454 85           GLO R5         ; Get low register R5
-8455 98           GHI R8         ; Get high register R8
-8456 85           GLO R5         ; Get low register R5
-8457 A0           PLO R0         ; Put low register R0
-8458 86           GLO R6         ; Get low register R6
-8459 1F           INC RF         ; Increment (RF)
-845A 85           GLO R5         ; Get low register R5
-845B DD           SEP RD         ; Set P=RD as program counter
-845C 85           GLO R5         ; Get low register R5
-845D F0           LDX            ; Pop stack. Place value in D register
-845E 85           GLO R5         ; Get low register R5
-845F D4           SEP R4         ; Set P=R4 as program counter
-8460 88           GLO R8         ; Get low register R8
-8461 81           GLO R1         ; Get low register R1
-8462 86           GLO R6         ; Get low register R6
-8463 49           LDA R9         ; Load D from (R9), increment R9
-8464 84           GLO R4         ; Get low register R4
-8465 ED           SEX RD         ; Set X=RD as datapointer
-8466 88           GLO R8         ; Get low register R8
-8467 4E           LDA RE         ; Load D from (RE), increment RE
-8468 85           GLO R5         ; Get low register R5
-8469 04           LDN R4         ; Load D with (R4)
-846A 89           GLO R9         ; Get low register R9
-846B A2           PLO R2         ; Put low register R2
-846C 85           GLO R5         ; Get low register R5
-846D D3           SEP R3         ; Set P=R3 as program counter
-846E 85           GLO R5         ; Get low register R5
-846F D3           SEP R3         ; Set P=R3 as program counter
-8470 88           GLO R8         ; Get low register R8
-8471 AA           PLO RA         ; Put low register RA
-8472 85           GLO R5         ; Get low register R5
-8473 D3           SEP R3         ; Set P=R3 as program counter
-8474 85           GLO R5         ; Get low register R5
-8475 D3           SEP R3         ; Set P=R3 as program counter
-8476 86           GLO R6         ; Get low register R6
-8477 C5           LSNQ           ; Long skip on Q=0
-8478 86           GLO R6         ; Get low register R6
-8479 D5           SEP R5         ; Set P=R5 as program counter
-847A 87           GLO R7         ; Get low register R7
-847B 03           LDN R3         ; Load D with (R3)
-847C 86           GLO R6         ; Get low register R6
-847D 79           MARK           ; Push X,P; mark subroutine call
-847E 87           GLO R7         ; Get low register R7
-847F 18           INC R8         ; Increment (R8)
-8480 89           GLO R9         ; Get low register R9
-8481 3C 85        BN1 8485H      ; Short branch on EF1=0
-8483 D3           SEP R3         ; Set P=R3 as program counter
-8484 88           GLO R8         ; Get low register R8
-8485 29           DEC R9         ; Decrement (R9)
-8486 87           GLO R7         ; Get low register R7
-8487 6C           INP 4          ; Input to (R(X)) and D, N=100
-8488 87           GLO R7         ; Get low register R7
-8489 CB 87 A7     LBNF 87A7H     ; Long branch on DF=0
-848C 87           GLO R7         ; Get low register R7
-848D 98           GHI R8         ; Get high register R8
-848E 87           GLO R7         ; Get low register R7
-848F 9B           GHI RB         ; Get high register RB
-8490 88           GLO R8         ; Get low register R8
-8491 0E           LDN RE         ; Load D with (RE)
-8492 88           GLO R8         ; Get low register R8
-8493 60           IRX            ; Increment register X
-8494 88           GLO R8         ; Get low register R8
-8495 6D           INP 5          ; Input to (R(X)) and D, N=101
-8496 89           GLO R9         ; Get low register R9
-8497 81           GLO R1         ; Get low register R1
-8498 85           GLO R5         ; Get low register R5
-8499 B6           PHI R6         ; Put high register R6
-849A 86           GLO R6         ; Get low register R6
-849B 67           OUT 7          ; Output (R(X)); Increment R(X), N=111
-849C 87           GLO R7         ; Get low register R7
-849D 48           LDA R8         ; Load D from (R8), increment R8
-849E 87           GLO R7         ; Get low register R7
-849F 4B           LDA RB         ; Load D from (RB), increment RB
-84A0 85           GLO R5         ; Get low register R5
-84A1 D3           SEP R3         ; Set P=R3 as program counter
-84A2 85           GLO R5         ; Get low register R5
-84A3 D3           SEP R3         ; Set P=R3 as program counter
-84A4 85           GLO R5         ; Get low register R5
-84A5 C9 85 C5     LBNQ 85C5H     ; Long branch on Q=0
-84A8 86           GLO R6         ; Get low register R6
-84A9 4E           LDA RE         ; Load D from (RE), increment RE
-84AA 86           GLO R6         ; Get low register R6
-84AB 44           LDA R4         ; Load D from (R4), increment R4
-84AC 86           GLO R6         ; Get low register R6
-84AD 41           LDA R1         ; Load D from (R1), increment R1
-84AE 85           GLO R5         ; Get low register R5
-84AF D3           SEP R3         ; Set P=R3 as program counter
+
+
+
+             ;---------------------------------------;
+             ;       OPCODE TABLE                    ;
+             ;---------------------------------------;
+8454 85 98   TABLE:  DW  BACK                                 
+8456 85 A0           DW  HOP                                  
+8458 86 1F           DW  MATCH                                
+845A 85 DD           DW  TSTV                                 
+845C 85 F0           DW  TSTN                                 
+845E 85 D4           DW  TEND                                 
+8460 88 81           DW  RTN                                  
+8462 86 49           DW  HOOK                                 
+8464 84 ED           DW  WARM                                 
+8466 88 4E           DW  XINIT                                
+8468 85 04           DW  CLEAR                                
+846A 89 A2           DW  INSRT                                
+846C 85 D3           DW  RETN                                 
+846E 85 D3           DW  RETN                                 
+8470 88 AA           DW  GETLN                                
+8472 85 D3           DW  RETN                                 
+8474 85 D3           DW  RETN                                 
+8476 86 C5           DW  STRNG                                
+8478 86 D5           DW  CRLF                                 
+847A 87 03           DW  TAB                                  
+847C 86 79           DW  PRS                                  
+847E 87 18           DW  PRN                                  
+8480 89 3C           DW  LIST
+8482 85 D3           DW  RETN                                 
+8484 88 29           DW  NXT                                  
+8486 87 6C           DW  CMPR                                 
+8488 87 CB           DW  IDIV
+848B 87 A7           DW  IMUL                           
+848C 87 98           DW  ISUB                                 
+848E 87 9B           DW  IADD                                 
+8490 88 0E           DW  INEG                                 
+8492 88 60           DW  XFER                                 
+8494 88 6D           DW  RSTR                                 
+8496 89 81           DW  SAV                                  
+8498 85 B6           DW  STORE                                
+849A 86 67           DW  IND                                  
+849C 87 48           DW  RSBP                                 
+849E 87 4B           DW  SVBP                                 
+84A0 85 D3           DW  RETN                                 
+84A2 85 D3           DW  RETN                                 
+84A4 85 C9           DW  BPOP
+84A6 85 C5           DW  APOP                           
+84A8 86 4E           DW  DUPS                                 
+84AA 86 44           DW  LITN                                 
+84AC 86 41           DW  LIT1                                 
+84AE 85 D3           DW  RETN                                 
+
+
+
 
 ; confirmed entry
-84B0 F8 B3        LDI B3H        ; Load D immediate
-84B2 A3           PLO R3         ; Put low register R3
-84B3 F8 84        LDI 84H        ; Load D immediate
-84B5 B3           PHI R3         ; Put high register R3
-84B6 D3           SEP R3         ; Set P=R3 as program counter
 
-84B7 BA           PHI RA         ; Put high register RA
-84B8 F8 1C        LDI 1CH        ; Load D immediate
-84BA AA           PLO RA         ; Put low register RA
-84BB 4A           LDA RA         ; Load D from (RA), increment RA
-84BC B2           PHI R2         ; Put high register R2
-84BD 4A           LDA RA         ; Load D from (RA), increment RA
-84BE A2           PLO R2         ; Put low register R2
-84BF 4A           LDA RA         ; Load D from (RA), increment RA
-84C0 BD           PHI RD         ; Put high register RD
-84C1 F8 00        LDI 00H        ; Load D immediate
-84C3 AD           PLO RD         ; Put low register RD
-84C4 0D           LDN RD         ; Load D with (RD)
-84C5 BF           PHI RF         ; Put high register RF
-84C6 E2           SEX R2         ; Set X=R2 as datapointer
-84C7 12           INC R2         ; Increment (R2)
-84C8 F0           LDX            ; Pop stack. Place value in D register
-84C9 AF           PLO RF         ; Put low register RF
-84CA FB FF        XRI FFH        ; Logical XOR D with value
-84CC 52           STR R2         ; Store D to (R2)
-84CD F3           XOR            ; Logical exclusive OR  D with (R(X))
-84CE ED           SEX RD         ; Set X=RD as datapointer
-84CF C6           LSNZ           ; Long skip on D!=0
-84D0 9F           GHI RF         ; Get high register RF
-84D1 F3           XOR            ; Logical exclusive OR  D with (R(X))
-84D2 FC FF        ADI FFH        ; Add D,DF with value
-84D4 8F           GLO RF         ; Get low register RF
-84D5 52           STR R2         ; Store D to (R2)
-84D6 3B C6        BNF 84C6H      ; Short branch on DF=0
-84D8 22           DEC R2         ; Decrement (R2)
-84D9 0A           LDN RA         ; Load D with (RA)
-84DA BD           PHI RD         ; Put high register RD
-84DB F8 23        LDI 23H        ; Load D immediate
-84DD AD           PLO RD         ; Put low register RD
-84DE 82           GLO R2         ; Get low register R2
-84DF 73           STXD           ; Store via X and decrement
-84E0 92           GHI R2         ; Get high register R2
-84E1 73           STXD           ; Store via X and decrement
-84E2 2A           DEC RA         ; Decrement (RA)
-84E3 2A           DEC RA         ; Decrement (RA)
-84E4 0A           LDN RA         ; Load D with (RA)
-84E5 73           STXD           ; Store via X and decrement
-84E6 8D           GLO RD         ; Get low register RD
-84E7 FB 12        XRI 12H        ; Logical XOR D with value
-84E9 3A E3        BNZ 84E3H      ; Short branch on D!=0
-84EB F6           SHR            ; Shift right D
-84EC C8 FF 00     LSKP           ; Long skip
-84EF F8 F2        LDI F2H        ; Load D immediate
-84F1 A3           PLO R3         ; Put low register R3
-84F2 F8 84        LDI 84H        ; Load D immediate
-84F4 B3           PHI R3         ; Put high register R3
-84F5 D3           SEP R3         ; Set P=R3 as program counter
-84F6 B4           PHI R4         ; Put high register R4
-84F7 B5           PHI R5         ; Put high register R5
-84F8 B7           PHI R7         ; Put high register R7
-84F9 F8 2A        LDI 2AH        ; Load D immediate
-84FB A4           PLO R4         ; Put low register R4
-84FC F8 3C        LDI 3CH        ; Load D immediate
-84FE A5           PLO R5         ; Put low register R5
-84FF F8 4B        LDI 4BH        ; Load D immediate
-8501 A7           PLO R7         ; Put low register R7
-8502 33 1A        BDF 851AH      ; Short branch on DF=1
-8504 D7           SEP R7         ; Set P=R7 as program counter
-8505 20           DEC R0         ; Decrement (R0)
-8506 BB           PHI RB         ; Put high register RB
-8507 4D           LDA RD         ; Load D from (RD), increment RD
-8508 AB           PLO RB         ; Put low register RB
-8509 9D           GHI RD         ; Get high register RD
-850A 5B           STR RB         ; Store D to (RB)
-850B 1B           INC RB         ; Increment (RB)
-850C 5B           STR RB         ; Store D to (RB)
-850D D7           SEP R7         ; Set P=R7 as program counter
-850E 16           INC R6         ; Increment (R6)
-850F 8B           GLO RB         ; Get low register RB
-8510 F4           ADD            ; Add D: D,DF= D+(R(X))
-8511 BF           PHI RF         ; Put high register RF
-8512 D7           SEP R7         ; Set P=R7 as program counter
-8513 24           DEC R4         ; Decrement (R4)
-8514 9F           GHI RF         ; Get high register RF
-8515 73           STXD           ; Store via X and decrement
-8516 9B           GHI RB         ; Get high register RB
-8517 7C 00        ADCI 00H       ; Add with carry immediate
-8519 73           STXD           ; Store via X and decrement
-851A D7           SEP R7         ; Set P=R7 as program counter
-851B 22           DEC R2         ; Decrement (R2)
-851C B2           PHI R2         ; Put high register R2
-851D 4D           LDA RD         ; Load D from (RD), increment RD
-851E A2           PLO R2         ; Put low register R2
-851F D7           SEP R7         ; Set P=R7 as program counter
-8520 26           DEC R6         ; Decrement (R6)
-8521 82           GLO R2         ; Get low register R2
-8522 73           STXD           ; Store via X and decrement
-8523 92           GHI R2         ; Get high register R2
-8524 73           STXD           ; Store via X and decrement
-8525 D4           SEP R4         ; Set P=R4 as program counter
-8526 86           GLO R6         ; Get low register R6
-8527 CC           LSIE           ; Long skip on IE=1
-8528 D7           SEP R7         ; Set P=R7 as program counter
-8529 1E           INC RE         ; Increment (RE)
-852A B9           PHI R9         ; Put high register R9
-852B 4D           LDA RD         ; Load D from (RD), increment RD
-852C A9           PLO R9         ; Put low register R9
+
+                  ;-----------------------------------------------;
+                  ;       COLD & WARM START INITIALIZATION        ;
+                  ;-----------------------------------------------;
+                  ;
+                  ; COLD START; ENTRY FOR "NEW?" = YES
+; COLD:           ;
+84B0 F8 B3        COLD:   LDI  LOW $+3    ; CHANGE PROGRAM COUNTER
+84B2 A3                   PLO  R3         ;   FROM R0 TO R3
+84B3 F8 84                LDI  HIGH $
+84B5 B3                   PHI  R3
+84B6 D3                   SEP  R3
+                  ; DETERMINE SIZE OF USER RAM
+84B7 BA                   PHI  AC         ; GET LOW END ADDR.
+84B8 F8 1C                LDI  LOW CONST  ;   OF USER PROGRAM
+84BA AA                   PLO  AC         ;   RAM (AT "CONST")
+84BB 4A                   LDA  AC
+84BC B2                   PHI  R2         ; ..AND PUT IN R2
+84BD 4A                   LDA  AC
+84BE A2                   PLO  R2
+84BF 4A                   LDA  AC         ; SET PZ TO WRAP POINT
+84C0 BD                   PHI  PZ         ;   (END OF SEARCH)
+84C1 F8 00                LDI  0
+84C3 AD                   PLO  PZ
+84C4 0D                   LDN  PZ         ; ..AND SAVE BYTE
+84C5 BF                   PHI  X          ;   NOW AT ADDR. PZ
+84C6 E2           SCAN:   SEX  R2         ; REPEAT TO SEARCH RAM..
+84C7 12                   INC  R2         ; - GET NEXT BYTE
+84C8 F0                   LDX
+84C9 AF                   PLO  X          ; - SAVE A COPY
+84CA FB FF                XRI  0FFH       ; - COMPLEMENT IT
+84CC 52                   STR  R2         ; - STORE IT
+84CD F3                   XOR             ; - SEE IF IT WORKED
+84CE ED                   SEX  PZ
+84CF C6                   LSNZ            ; - IF MATCHES, IS RAM
+84D0 9F                   GHI  X          ;     SET CARRY IF AT
+84D1 F3                   XOR             ;     WRAP POINT..
+84D2 FC FF                ADI  0FFH       ; - ELSE IS NOT RAM
+84D4 8F                   GLO  X          ;     RESTORE ORIGINAL BYTE
+84D5 52                   STR  R2
+84D6 3B C6                BNF  SCAN       ; - ..UNTIL END OR WRAP POINT
+84D8 22                   DEC  R2
+84D9 0A                   LDN  AC         ; RAM SIZED: SET
+84DA BD                   PHI  PZ         ;   POINTER PZ TO
+84DB F8 23                LDI  STACK+1    ;   WORK AREA
+84DD AD                   PLO  PZ
+84DE 82                   GLO  R2         ; STORE RAM END ADDRESS
+84DF 73                   STXD
+84E0 92                   GHI  R2
+84E1 73                   STXD            ; GET & STORE RAM BEGINNIG
+84E2 2A                   DEC  AC         ; REPEAT TO COPY PARAMETERS..
+84E3 2A                   DEC  AC         ; - POINT TO NEXT
+84E4 0A                   LDN  AC         ; - GET PARAMETER
+84E5 73                   STXD            ; - STORE IN WORK AREA
+84E6 8D                   GLO  PZ
+84E7 FB 12                XRI  BS-1       ; - TEST FOR LAST PARAMETER
+84E9 3A E3                BNZ  $-6        ; - ..UNTIL LAST COPIED
+84EB F6                   SHR             ; SET DF=0 FOR "CLEAR"
+84EC C8                   LSKP
+
+                  ;
+                  ; WARM START: ENTRY FOR "NEW?" = NO
+                  ;
+84ED FF 00        WARM:   SMI  0          ; SET DF=1 FOR "DON'T CLEAR"
+84EF F8 F2                LDI  $+3
+84F1 A3                   PLO  R3         ; BE SURE PROGRAM COUNTER IS R3
+84F2 F8 84                LDI  HIGH $
+84F4 B3                   PHI  R3
+84F5 D3                   SEP  R3
+84F6 B4                   PHI  R4         ; INITIALIZE R4, R5, R7
+84F7 B5                   PHI  R5
+84F8 B7                   PHI  R7
+84F9 F8 2A                LDI  CALL
+84FB A4                   PLO  R4
+84FC F8 3C                LDI  RETRN
+84FE A5                   PLO  R5
+84FF F8 4B                LDI  FETCH
+8501 A7                   PLO  R7
+8502 33 1A                BDF  PEND       ; IF COLD START,
+8504 D7 20        CLEAR:  DB   FECH,BASIC ; - MARK PROGRAM EMPTY
+8506 BB                   PHI  BP
+8507 4D                   LDA  PZ
+8508 AB                   PLO  BP
+8509 9D                   DB   LDI0       ;   WITH LINE# = 0
+850A 5B                   STR  BP
+850B 1B                   INC  BP
+850C 5B                   STR  BP
+850D D7 16                DB   FECH,SPARE-1; - SET MEND = START + SPARE
+850F 8B                   GLO  BP         ;   GET START
+8510 F4                   ADD             ;   ADD LOW BYTE OF SPARE
+8511 BF                   PHI  X          ;   SAVE TEMPORARILY
+8512 D7 24                DB   FECH,MEND  ;   GET MEND
+8514 9F                   GHI  X
+8515 73                   STXD            ;   STORE LOW BYTE OF MEND
+8516 9B                   GHI  BP
+8517 7C 00                ADCI 0          ;   ADD CARRY
+8519 73                   STXD            ;   STORE HIGH BYTE OF MEND
+851A D7 22        PEND:   DB   FECH,STACK ; SET STACK TO END OF MEMORY
+851C B2                   PHI  R2
+851D 4D                   LDA  PZ
+851E A2                   PLO  R2
+851F D7 26                DB   FECH,TOPS
+8521 82                   GLO  R2         ; SET TOPS TO EMPTY
+8522 73                   STXD            ; (I.E. STACK END)
+8523 92                   GHI  R2
+8524 73                   STXD
+8525 D4                   SEP R4 ;CALL 
+8526 86                   GLO R6         
+8527 CC                   LSIE           ; Long skip on IE=1
+8528 D7 1E        IIL:    DB   FECH,AIL   ; SET IL PC
+852A B9                   PHI  PC
+852B 4D                   LDA  PZ
+852C A9                   PLO  PC         ; CONTINUE INTO "NEXT"
+
+
+
 852D E2           SEX R2         ; Set X=R2 as datapointer
 852E 49           LDA R9         ; Load D from (R9), increment R9
 852F FF 30        SMI 30H        ; Substract D,DF to value
@@ -329,6 +327,7 @@
 8548 F0           LDX            ; Pop stack. Place value in D register
 8549 B6           PHI R6         ; Put high register R6
 854A D5           SEP R5         ; Set P=R5 as program counter
+
 854B FF 10        SMI 10H        ; Substract D,DF to value
 854D 3B 6A        BNF 856AH      ; Short branch on DF=0
 854F A6           PLO R6         ; Put low register R6
@@ -344,6 +343,7 @@
 855D 73           STXD           ; Store via X and decrement
 855E 86           GLO R6         ; Get low register R6
 855F F6           SHR            ; Shift right D
+
 8560 F6           SHR            ; Shift right D
 8561 F6           SHR            ; Shift right D
 8562 F6           SHR            ; Shift right D
@@ -351,6 +351,7 @@
 8565 FC 54        ADI 54H        ; Add D,DF with value
 8567 A6           PLO R6         ; Put low register R6
 8568 30 42        BR  8542H      ; Short branch
+
 856A FC 08        ADI 08H        ; Add D,DF with value
 856C FA 07        ANI 07H        ; Logical AND D with value
 856E B6           PHI R6         ; Put high register R6
@@ -363,8 +364,9 @@
 8576 73           STXD           ; Store via X and decrement
 8577 D4           SEP R4         ; Set P=R4 as program counter
 8578 86           GLO R6         ; Get low register R6
-8579 37 D7        B4  85D7H      ; Short branch on EF4=1
-857B 1E           INC RE         ; Increment (RE)
+8579 37 
+
+857A D7 1E       
 857C 86           GLO R6         ; Get low register R6
 857D F4           ADD            ; Add D: D,DF= D+(R(X))
 857E A9           PLO R9         ; Put low register R9
@@ -373,6 +375,7 @@
 8581 74           ADC            ; Add with carry
 8582 B9           PHI R9         ; Put high register R9
 8583 30 2D        BR  852DH      ; Short branch
+
 8585 FD 07        SDI 07H        ; Substract D,DF from value
 8587 52           STR R2         ; Store D to (R2)
 8588 D7           SEP R7         ; Set P=R7 as program counter
@@ -390,18 +393,22 @@
 8594 02           LDN R2         ; Load D with (R2)
 8595 56           STR R6         ; Store D to (R6)
 8596 30 2D        BR  852DH      ; Short branch
+
 8598 86           GLO R6         ; Get low register R6
 8599 FF 20        SMI 20H        ; Substract D,DF to value
 859B A6           PLO R6         ; Put low register R6
 859C 96           GHI R6         ; Get high register R6
-859D 7F           SMBI           ; Substract memory toh borrow, immediate
-859E 00           IDL            ; Idle or wait for interrupt or DMA request
-859F 38 96        SKP            ; Skip next byte
+
+859D 7F 00        SMBI           ; Substract memory toh borrow, immediate
+859F 38 
+
+85A0 96   
 85A1 C2 86 7F     LBZ 867FH      ; Long branch on D=0
 85A4 B9           PHI R9         ; Put high register R9
 85A5 86           GLO R6         ; Get low register R6
 85A6 A9           PLO R9         ; Put low register R9
 85A7 30 2D        BR  852DH      ; Short branch
+
 85A9 1B           INC RB         ; Increment (RB)
 85AA 0B           LDN RB         ; Load D with (RB)
 85AB FF 20        SMI 20H        ; Substract D,DF to value
@@ -411,6 +418,7 @@
 85B2 FD 09        SDI 09H        ; Substract D,DF from value
 85B4 0B           LDN RB         ; Load D with (RB)
 85B5 D5           SEP R5         ; Set P=R5 as program counter
+
 85B6 D4           SEP R4         ; Set P=R4 as program counter
 85B7 85           GLO R5         ; Get low register R5
 85B8 C5           LSNQ           ; Long skip on Q=0
@@ -422,6 +430,7 @@
 85BE 8A           GLO RA         ; Get low register RA
 85BF 5D           STR RD         ; Store D to (RD)
 85C0 30 C9        BR  85C9H      ; Short branch
+
 85C2 D4           SEP R4         ; Set P=R4 as program counter
 85C3 85           GLO R5         ; Get low register R5
 85C4 C5           LSNQ           ; Long skip on Q=0
@@ -437,17 +446,20 @@
 85D1 4D           LDA RD         ; Load D from (RD), increment RD
 85D2 AA           PLO RA         ; Put low register RA
 85D3 D5           SEP R5         ; Set P=R5 as program counter
+
 85D4 D4           SEP R4         ; Set P=R4 as program counter
 85D5 85           GLO R5         ; Get low register R5
 85D6 AA           PLO RA         ; Put low register RA
 85D7 FB 0D        XRI 0DH        ; Logical XOR D with value
 85D9 32 2D        BZ  852DH      ; Short branch on D=0
 85DB 30 A0        BR  85A0H      ; Short branch
+
 85DD D4           SEP R4         ; Set P=R4 as program counter
 85DE 85           GLO R5         ; Get low register R5
 85DF AA           PLO RA         ; Put low register RA
 85E0 FF 41        SMI 41H        ; Substract D,DF to value
 85E2 3B A0        BNF 85A0H      ; Short branch on DF=0
+
 85E4 FF 1A        SMI 1AH        ; Substract D,DF to value
 85E6 33 A0        BDF 85A0H      ; Short branch on DF=1
 85E8 1B           INC RB         ; Increment (RB)
@@ -455,10 +467,9 @@
 85EA FE           SHL            ; Shift left D
 85EB D4           SEP R4         ; Set P=R4 as program counter
 85EC 86           GLO R6         ; Get low register R6
-
-
 85ED 59           STR R9         ; Store D to (R9)
 85EE 30 2D        BR  852DH      ; Short branch
+
 85F0 D4           SEP R4         ; Set P=R4 as program counter
 85F1 85           GLO R5         ; Get low register R5
 85F2 AA           PLO RA         ; Put low register RA
@@ -498,6 +509,7 @@
 8618 AA           PLO RA         ; Put low register RA
 8619 C3 85 FB     LBDF 85FBH     ; Long branch on DF=1
 861C C0 85 2D     LBR 852DH      ; Long branch
+
 861F 9B           GHI RB         ; Get high register RB
 8620 BA           PHI RA         ; Put high register RA
 8621 8B           GLO RB         ; Get low register RB
@@ -505,9 +517,11 @@
 8623 D4           SEP R4         ; Set P=R4 as program counter
 8624 85           GLO R5         ; Get low register R5
 8625 AA           PLO RA         ; Put low register RA
+
 8626 1B           INC RB         ; Increment (RB)
 8627 52           STR R2         ; Store D to (R2)
 8628 49           LDA R9         ; Load D from (R9), increment R9
+
 8629 F3           XOR            ; Logical exclusive OR  D with (R(X))
 862A 32 23        BZ  8623H      ; Short branch on D=0
 862C FB 80        XRI 80H        ; Logical XOR D with value
@@ -517,6 +531,7 @@
 8632 8A           GLO RA         ; Get low register RA
 8633 AB           PLO RB         ; Put low register RB
 8634 C0 85 A0     LBR 85A0H      ; Long branch
+
 8637 D7           SEP R7         ; Set P=R7 as program counter
 8638 24           DEC R4         ; Decrement (R4)
 8639 82           GLO R2         ; Get low register R2
@@ -526,16 +541,19 @@
 863D 75           SDB            ; Substract D with borrow
 863E 33 7F        BDF 867FH      ; Short branch on DF=1
 8640 D5           SEP R5         ; Set P=R5 as program counter
+
 8641 49           LDA R9         ; Load D from (R9), increment R9
 8642 30 59        BR  8659H      ; Short branch
 8644 49           LDA R9         ; Load D from (R9), increment R9
 8645 BA           PHI RA         ; Put high register RA
 8646 49           LDA R9         ; Load D from (R9), increment R9
 8647 30 55        BR  8655H      ; Short branch
+
 8649 D4           SEP R4         ; Set P=R4 as program counter
 864A 89           GLO R9         ; Get low register R9
 864B 25           DEC R5         ; Decrement (R5)
 864C 30 55        BR  8655H      ; Short branch
+
 864E D4           SEP R4         ; Set P=R4 as program counter
 864F 85           GLO R5         ; Get low register R5
 8650 C5           LSNQ           ; Long skip on Q=0
@@ -559,12 +577,15 @@
 8664 02           LDN R2         ; Load D with (R2)
 8665 5D           STR RD         ; Store D to (RD)
 8666 D5           SEP R5         ; Set P=R5 as program counter
+
 8667 D4           SEP R4         ; Set P=R4 as program counter
 8668 85           GLO R5         ; Get low register R5
 8669 C9 AD 4D     LBNQ AD4DH     ; Long branch on Q=0
 866C BA           PHI RA         ; Put high register RA
 866D 4D           LDA RD         ; Load D from (RD), increment RD
+
 866E 30 55        BR  8655H      ; Short branch
+
 8670 FB 2F        XRI 2FH        ; Logical XOR D with value
 8672 32 66        BZ  8666H      ; Short branch on D=0
 8674 FB 22        XRI 22H        ; Logical XOR D with value
@@ -575,6 +596,7 @@
 867A FB 0D        XRI 0DH        ; Logical XOR D with value
 867C 3A 70        BNZ 8670H      ; Short branch on D!=0
 867E 29           DEC R9         ; Decrement (R9)
+
 867F D7           SEP R7         ; Set P=R7 as program counter
 8680 18           INC R8         ; Increment (R8)
 8681 B8           PHI R8         ; Put high register R8
@@ -631,11 +653,10 @@
 86B8 4D           LDA RD         ; Load D from (RD), increment RD
 86B9 A2           PLO R2         ; Put low register R2
 86BA C0 85 28     LBR 8528H      ; Long branch
-86BD 20           DEC R0         ; Decrement (R0)
-86BE 41           LDA R1         ; Load D from (R1), increment R1
-86BF 54           STR R4         ; Store D to (R4)
-86C0 20           DEC R0         ; Decrement (R0)
-86C1 A3           PLO R3         ; Put low register R3
+
+86BD 20 41 54 20          ATMSG:  DB   ' AT ',0A3H; ERROR MESSAGE TEMPLATE
+86C1 A3           
+
 86C2 D4           SEP R4         ; Set P=R4 as program counter
 86C3 86           GLO R6         ; Get low register R6
 86C4 F2           AND            ; Logical AND: D with (R(X))
@@ -643,6 +664,7 @@
 86C6 FC 80        ADI 80H        ; Add D,DF with value
 86C8 3B C2        BNF 86C2H      ; Short branch on DF=0
 86CA 30 F2        BR  86F2H      ; Short branch
+
 86CC D7           SEP R7         ; Set P=R7 as program counter
 86CD 19           INC R9         ; Increment (R9)
 86CE F8 80        LDI 80H        ; Load D immediate
@@ -650,7 +672,9 @@
 86D1 9D           GHI RD         ; Get high register RD
 86D2 73           STXD           ; Store via X and decrement
 86D3 73           STXD           ; Store via X and decrement
-86D4 C8 D7 1B     LSKP           ; Long skip
+86D4 C8 
+
+86D5 D7 1B     LSKP           ; Long skip
 86D7 FE           SHL            ; Shift left D
 86D8 33 66        BDF 8666H      ; Short branch on DF=1
 86DA D7           SEP R7         ; Set P=R7 as program counter
@@ -670,8 +694,10 @@
 86EA C7           LSNF           ; Long skip on DF=0
 86EB F8 FF        LDI FFH        ; Load D immediate
 86ED 30 DF        BR  86DFH      ; Short branch
+
 86EF 73           STXD           ; Store via X and decrement
 86F0 F8 8A        LDI 8AH        ; Load D immediate
+
 86F2 FF 80        SMI 80H        ; Substract D,DF to value
 86F4 BF           PHI RF         ; Put high register RF
 86F5 D7           SEP R7         ; Set P=R7 as program counter
@@ -683,6 +709,7 @@
 86FE 5D           STR RD         ; Store D to (RD)
 86FF 9F           GHI RF         ; Get high register RF
 8700 C0 84 09     LBR 8409H      ; Long branch                    sub-braches to 0103
+
 8703 D7           SEP R7         ; Set P=R7 as program counter
 8704 1B           INC RB         ; Increment (RB)
 8705 FA 07        ANI 07H        ; Logical AND D with value
@@ -690,12 +717,14 @@
 8709 AA           PLO RA         ; Put low register RA
 870A 8A           GLO RA         ; Get low register RA
 870B 32 97        BZ  8797H      ; Short branch on D=0
+
 870D F8 20        LDI 20H        ; Load D immediate
 870F D4           SEP R4         ; Set P=R4 as program counter
 8710 86           GLO R6         ; Get low register R6
 8711 F4           ADD            ; Add D: D,DF= D+(R(X))
 8712 2A           DEC RA         ; Decrement (RA)
 8713 30 0A        BR  870AH      ; Short branch
+
 8715 D4           SEP R4         ; Set P=R4 as program counter
 8716 86           GLO R6         ; Get low register R6
 8717 54           STR R4         ; Store D to (R4)
@@ -739,6 +768,7 @@
 8744 86           GLO R6         ; Get low register R6
 8745 F4           ADD            ; Add D: D,DF= D+(R(X))
 8746 30 3E        BR  873EH      ; Short branch
+
 8748 D7           SEP R7         ; Set P=R7 as program counter
 8749 2E           DEC RE         ; Decrement (RE)
 874A 38 9B        SKP            ; Skip next byte
@@ -755,7 +785,9 @@
 875A 73           STXD           ; Store via X and decrement
 875B 9B           GHI RB         ; Get high register RB
 875C 5D           STR RD         ; Store D to (RD)
+
 875D D5           SEP R5         ; Set P=R5 as program counter
+
 875E D7           SEP R7         ; Set P=R7 as program counter
 875F 2E           DEC RE         ; Decrement (RE)
 8760 B8           PHI R8         ; Put high register R8
@@ -770,6 +802,7 @@
 8769 88           GLO R8         ; Get low register R8
 876A AB           PLO RB         ; Put low register RB
 876B D5           SEP R5         ; Set P=R5 as program counter
+
 876C D4           SEP R4         ; Set P=R4 as program counter
 876D 85           GLO R5         ; Get low register R5
 876E C5           LSNQ           ; Long skip on Q=0
@@ -806,6 +839,7 @@
 8795 C4           NOP            ; No operation
 8796 19           INC R9         ; Increment (R9)
 8797 D5           SEP R5         ; Set P=R5 as program counter
+
 8798 D4           SEP R4         ; Set P=R4 as program counter
 8799 88           GLO R8         ; Get low register R8
 879A 0E           LDN RE         ; Load D with (RE)
@@ -821,6 +855,7 @@
 87A4 74           ADC            ; Add with carry
 87A5 5D           STR RD         ; Store D to (RD)
 87A6 D5           SEP R5         ; Set P=R5 as program counter
+
 87A7 D4           SEP R4         ; Set P=R4 as program counter
 87A8 85           GLO R5         ; Get low register R5
 87A9 C5           LSNQ           ; Long skip on Q=0
@@ -854,6 +889,7 @@
 87C7 1D           INC RD         ; Increment (RD)
 87C8 3A B1        BNZ 87B1H      ; Short branch on D!=0
 87CA D5           SEP R5         ; Set P=R5 as program counter
+
 87CB D4           SEP R4         ; Set P=R4 as program counter
 87CC 85           GLO R5         ; Get low register R5
 87CD C5           LSNQ           ; Long skip on Q=0
@@ -865,6 +901,7 @@
 87D5 0D           LDN RD         ; Load D with (RD)
 87D6 F3           XOR            ; Logical exclusive OR  D with (R(X))
 87D7 73           STXD           ; Store via X and decrement
+
 87D8 D4           SEP R4         ; Set P=R4 as program counter
 87D9 88           GLO R8         ; Get low register R8
 87DA 13           INC R3         ; Increment (R3)
@@ -921,6 +958,7 @@
 8815 FE           SHL            ; Shift left D
 8816 3B 21        BNF 8821H      ; Short branch on DF=0
 8818 1D           INC RD         ; Increment (RD)
+
 8819 9D           GHI RD         ; Get high register RD
 881A F7           SM             ; Substract memory: DF,D=D-(R(X))
 881B 73           STXD           ; Store via X and decrement
@@ -929,6 +967,7 @@
 881E 5D           STR RD         ; Store D to (RD)
 881F FF 00        SMI 00H        ; Substract D,DF to value
 8821 D5           SEP R5         ; Set P=R5 as program counter
+
 8822 8A           GLO RA         ; Get low register RA
 8823 FE           SHL            ; Shift left D
 8824 AA           PLO RA         ; Put low register RA
@@ -936,6 +975,7 @@
 8826 7E           SHLC           ; Shift left with carry
 8827 BA           PHI RA         ; Put high register RA
 8828 D5           SEP R5         ; Set P=R5 as program counter
+
 8829 D7           SEP R7         ; Set P=R7 as program counter
 882A 18           INC R8         ; Increment (R8)
 882B C2 86 B1     LBZ 86B1H      ; Long branch on D=0
@@ -958,6 +998,7 @@
 8842 D7           SEP R7         ; Set P=R7 as program counter
 8843 17           INC R7         ; Increment (R7)
 8844 5D           STR RD         ; Store D to (RD)
+
 8845 D5           SEP R5         ; Set P=R5 as program counter
 8846 D7           SEP R7         ; Set P=R7 as program counter
 8847 1E           INC RE         ; Increment (RE)
@@ -965,6 +1006,7 @@
 8849 4D           LDA RD         ; Load D from (RD), increment RD
 884A A9           PLO R9         ; Put low register R9
 884B C0 86 7F     LBR 867FH      ; Long branch
+
 884E D7           SEP R7         ; Set P=R7 as program counter
 884F 20           DEC R0         ; Decrement (R0)
 8850 BB           PHI RB         ; Put high register RB
@@ -980,7 +1022,9 @@
 885B 73           STXD           ; Store via X and decrement
 885C 99           GHI R9         ; Get high register R9
 885D 5D           STR RD         ; Store D to (RD)
+
 885E 30 42        BR  8842H      ; Short branch
+
 8860 D4           SEP R4         ; Set P=R4 as program counter
 8861 88           GLO R8         ; Get low register R8
 8862 FE           SHL            ; Shift left D
@@ -992,6 +1036,7 @@
 8869 9A           GHI RA         ; Get high register RA
 886A 5D           STR RD         ; Store D to (RD)
 886B 30 4B        BR  884BH      ; Short branch
+
 886D D4           SEP R4         ; Set P=R4 as program counter
 886E 88           GLO R8         ; Get low register R8
 886F 8B           GLO RB         ; Get low register RB
@@ -1010,6 +1055,7 @@
 887C 01           LDN R1         ; Load D with (R1)
 887D 3A 65        BNZ 8865H      ; Short branch on D!=0
 887F 30 88        BR  8888H      ; Short branch
+
 8881 D4           SEP R4         ; Set P=R4 as program counter
 8882 88           GLO R8         ; Get low register R8
 8883 8B           GLO RB         ; Get low register RB
@@ -1018,6 +1064,7 @@
 8886 02           LDN R2         ; Load D with (R2)
 8887 A9           PLO R9         ; Put low register R9
 8888 C0 85 2D     LBR 852DH      ; Long branch
+
 888B D7           SEP R7         ; Set P=R7 as program counter
 888C 22           DEC R2         ; Decrement (R2)
 888D 12           INC R2         ; Increment (R2)
@@ -1031,11 +1078,14 @@
 8897 7C 00        ADCI 00H       ; Add with carry immediate
 8899 F3           XOR            ; Logical exclusive OR  D with (R(X))
 889A 32 4B        BZ  884BH      ; Short branch on D=0
+
 889C 12           INC R2         ; Increment (R2)
 889D D5           SEP R5         ; Set P=R5 as program counter
+
 889E D7           SEP R7         ; Set P=R7 as program counter
 889F 16           INC R6         ; Increment (R6)
 88A0 38 9D        SKP            ; Skip next byte
+
 88A2 FE           SHL            ; Shift left D
 88A3 D7           SEP R7         ; Set P=R7 as program counter
 88A4 1A           INC RA         ; Increment (RA)
@@ -1043,6 +1093,7 @@
 88A6 76           SHRC           ; Shift right with carry
 88A7 5D           STR RD         ; Store D to (RD)
 88A8 30 B2        BR  88B2H      ; Short branch
+
 88AA F8 30        LDI 30H        ; Load D immediate
 88AC AB           PLO RB         ; Put low register RB
 88AD D4           SEP R4         ; Set P=R4 as program counter
@@ -1094,6 +1145,7 @@
 88EC 4B           LDA RB         ; Load D from (RB), increment RB
 88ED FB 0D        XRI 0DH        ; Logical XOR D with value
 88EF 3A B2        BNZ 88B2H      ; Short branch on D!=0
+
 88F1 D4           SEP R4         ; Set P=R4 as program counter
 88F2 86           GLO R6         ; Get low register R6
 88F3 D5           SEP R5         ; Set P=R5 as program counter
@@ -1104,6 +1156,7 @@
 88F8 F8 30        LDI 30H        ; Load D immediate
 88FA AB           PLO RB         ; Put low register RB
 88FB C0 85 C5     LBR 85C5H      ; Long branch
+
 88FE D4           SEP R4         ; Set P=R4 as program counter
 88FF 85           GLO R5         ; Get low register R5
 8900 C5           LSNQ           ; Long skip on Q=0
@@ -1137,6 +1190,7 @@
 891F FB 0D        XRI 0DH        ; Logical XOR D with value
 8921 3A 1E        BNZ 891EH      ; Short branch on D!=0
 8923 30 0D        BR  890DH      ; Short branch
+
 8925 D4           SEP R4         ; Set P=R4 as program counter
 8926 89           GLO R9         ; Get low register R9
 8927 28           DEC R8         ; Decrement (R8)
@@ -1156,10 +1210,12 @@
 8935 D7           SEP R7         ; Set P=R7 as program counter
 8936 19           INC R9         ; Increment (R9)
 8937 02           LDN R2         ; Load D with (R2)
+
 8938 5D           STR RD         ; Store D to (RD)
 8939 AD           PLO RD         ; Put low register RD
 893A 8A           GLO RA         ; Get low register RA
 893B D5           SEP R5         ; Set P=R5 as program counter
+
 893C D7           SEP R7         ; Set P=R7 as program counter
 893D 2C           DEC RC         ; Decrement (RC)
 893E 8B           GLO RB         ; Get low register RB
@@ -1214,12 +1270,14 @@
 8977 86           GLO R6         ; Get low register R6
 8978 D5           SEP R5         ; Set P=R5 as program counter
 8979 30 50        BR  8950H      ; Short branch
+
 897B D7           SEP R7         ; Set P=R7 as program counter
 897C 2C           DEC RC         ; Decrement (RC)
 897D BB           PHI RB         ; Put high register RB
 897E 4D           LDA RD         ; Load D from (RD), increment RD
 897F AB           PLO RB         ; Put low register RB
 8980 D5           SEP R5         ; Set P=R5 as program counter
+
 8981 D7           SEP R7         ; Set P=R7 as program counter
 8982 26           DEC R6         ; Decrement (R6)
 8983 82           GLO R2         ; Get low register R2
@@ -1241,6 +1299,7 @@
 8993 8A           GLO RA         ; Get low register RA
 8994 73           STXD           ; Store via X and decrement
 8995 C0 85 2D     LBR 852DH      ; Long branch
+
 8998 D7           SEP R7         ; Set P=R7 as program counter
 8999 27           DEC R7         ; Decrement (R7)
 899A 4B           LDA RB         ; Load D from (RB), increment RB
@@ -1251,6 +1310,7 @@
 899F F1           OR             ; Logical OR  D with (R(X))
 89A0 1D           INC RD         ; Increment (RD)
 89A1 D5           SEP R5         ; Set P=R5 as program counter
+
 89A2 D4           SEP R4         ; Set P=R4 as program counter
 89A3 87           GLO R7         ; Get low register R7
 89A4 5E           STR RE         ; Store D to (RE)
@@ -1280,6 +1340,7 @@
 89C0 28           DEC R8         ; Decrement (R8)
 89C1 0B           LDN RB         ; Load D with (RB)
 89C2 FB 0D        XRI 0DH        ; Logical XOR D with value
+
 89C4 73           STXD           ; Store via X and decrement
 89C5 5D           STR RD         ; Store D to (RD)
 89C6 32 D9        BZ  89D9H      ; Short branch on D=0
@@ -1333,6 +1394,7 @@
 89FB 98           GHI R8         ; Get high register R8
 89FC 52           STR R2         ; Store D to (R2)
 89FD 92           GHI R2         ; Get high register R2
+
 89FE 75           SDB            ; Substract D with borrow
 89FF C3 86 7E     LBDF 867EH     ; Long branch on DF=1
 8A02 8F           GLO RF         ; Get low register RF
@@ -1388,6 +1450,7 @@
 8A3A 4D           LDA RD         ; Load D from (RD), increment RD
 8A3B AA           PLO RA         ; Put low register RA
 8A3C D7           SEP R7         ; Set P=R7 as program counter
+
 8A3D 28           DEC R8         ; Decrement (R8)
 8A3E AF           PLO RF         ; Put low register RF
 8A3F 0F           LDN RF         ; Load D with (RF)
@@ -1403,6 +1466,7 @@
 8A4A FB 0D        XRI 0DH        ; Logical XOR D with value
 8A4C 3A 47        BNZ 8A47H      ; Short branch on D!=0
 8A4E C0 86 B5     LBR 86B5H      ; Long branch
+
 8A51 73           STXD           ; Store via X and decrement
 8A52 52           STR R2         ; Store D to (R2)
 8A53 9D           GHI RD         ; Get high register RD
@@ -1421,11 +1485,20 @@
 8A63 C4           NOP            ; No operation
 8A64 12           INC R2         ; Increment (R2)
 8A65 DD           SEP RD         ; Set P=RD as program counter
+
 8A66 FC 00        ADI 00H        ; Add D,DF with value
+
 8A68 35 6E        B2  8A6EH      ; Short branch on EF2=1
+
 8A6A FF 00        SMI 00H        ; Substract D,DF to value
+
 8A6C 3D 6C        BN2 8A6CH      ; Short branch on EF2=0
+
 8A6E D5           SEP R5         ; Set P=R5 as program counter
+
+
+
+; major diff here
 8A6F D7           SEP R7         ; Set P=R7 as program counter
 8A70 11           INC R1         ; Increment (R1)
 8A71 8D           GLO RD         ; Get low register RD
@@ -1485,36 +1558,37 @@
 8AB1 D2           SEP R2         ; Set P=R2 as program counter
 8AB2 83           GLO R3         ; Get low register R3
 
+;aligned with 06AC
 8AB3 49 4E                       ; "IN" (int)
 8AB5 D4                          ; 'T' + 0x80
 
-8AB6 E5           SEX R5         ; Set X=R5 as datapointer
-8AB7 71           DIS            ; Disable. Return from interrupt, set IE=0
-8AB8 88           GLO R8         ; Get low register R8
-8AB9 BB           PHI RB         ; Put high register RB
-8ABA E1           SEX R1         ; Set X=R1 as datapointer
-8ABB 1D           INC RD         ; Increment (RD)
-8ABC 8F           GLO RF         ; Get low register RF
-8ABD A2           PLO R2         ; Put low register R2
-8ABE 21           DEC R1         ; Decrement (R1)
-8ABF 58           STR R8         ; Store D to (R8)
-8AC0 6F           INP 7          ; Input to (R(X)) and D, N=111
-8AC1 83           GLO R3         ; Get low register R3
-8AC2 AC           PLO RC         ; Put low register RC
-8AC3 22           DEC R2         ; Decrement (R2)
-8AC4 55           STR R5         ; Store D to (R5)
-8AC5 83           GLO R3         ; Get low register R3
-8AC6 BA           PHI RA         ; Put high register RA
-8AC7 24           DEC R4         ; Decrement (R4)
-8AC8 93           GHI R3         ; Get high register R3
-8AC9 E0           SEX R0         ; Set X=R0 as datapointer
-8ACA 23           DEC R3         ; Decrement (R3)
-8ACB 1D           INC RD         ; Increment (RD)
-8ACC 30 BC        BR  8ABCH      ; Short branch
-8ACE 20           DEC R0         ; Decrement (R0)
-8ACF 48           LDA R8         ; Load D from (R8), increment R8
-8AD0 91           GHI R1         ; Get high register R1
+8AB6 E5           
+8AB7 71           
+8AB8 88           
+8AB9 BB                 DB  (";"+80H)       
+8ABA E1          P7:	DB  BE+P8-$	; BE P8 
+8ABB 1D           
+8ABC 8F           
+8ABD A2                 DB  ('"'+80H)
+8ABE 21           
+8ABF 58           
+8AC0 6F           
+8AC1 83           P5:	DB  BC+P6-$	; BC P6 ","
+8AC2 AC                 DB  (","+80H)       
+8AC3 22                 DB  PT		; PT
+8AC4 55           
+8AC5 83           P9:	DB  BC+P10-$	; BC P10 "^"
+8AC6 BA                 DB  (":"+80H)     
+8AC7 24 93              DB  PS,93H	; PS "<DC3>"	PRINT <DC3>=13H=^S
+8AC9 E0           P10:	DB  BE+1	; BE *
+8ACA 23           P12:	DB  NL		; NL		THEN <CR><LF>
+8ACB 1D           P11:	DB  NX		; NX
+8ACC 30 BC        
+8ACE 20           
+8ACF 48           
+8AD0 91           
 
+; aligned with 06CF
 8AD1 49                          ; 'I' (if)
 8AD2 C6                          ; 'F'+0x80
 
@@ -1526,34 +1600,35 @@
 8ADA 54 48 45                    ; "THE" (then)
 8ADD CE                          ; 'N'+0x80
 
-8ADE 1C           INC RC         ; Increment (RC)
-8ADF 1D           INC RD         ; Increment (RD)
-8AE0 38 0D        SKP            ; Skip next byte
-8AE2 9A           GHI RA         ; Get high register RA
+8ADE 1C           I1:	DB  CP		; CP
+8ADF 1D                 DB  NX		; NX
+8AE0 38 0D              DW  JU+GOTO-STRT; JU STMT
+
+8AE2 9A           
 
 8AE3 49 4E 50 55                 ; "INPU" (input)
 8AE7 D4                          ; 'T'+0x80
 
-8AE8 A0           PLO R0         ; Put low register R0
-8AE9 10           INC R0         ; Increment (R0)
-8AEA E7           SEX R7         ; Set X=R7 as datapointer
-8AEB 24           DEC R4         ; Decrement (R4)
-8AEC 3F 20        BN4 8A20H      ; Short branch on EF4=0
-8AEE 91           GHI R1         ; Get high register R1
-8AEF 27           DEC R7         ; Decrement (R7)
-8AF0 E1           SEX R1         ; Set X=R1 as datapointer
-8AF1 59           STR R9         ; Store D to (R9)
-8AF2 81           GLO R1         ; Get low register R1
-8AF3 AC           PLO RC         ; Put low register RC
-8AF4 30 BC        BR  8ABCH      ; Short branch
-8AF6 13           INC R3         ; Increment (R3)
-8AF7 11           INC R1         ; Increment (R1)
-8AF8 82           GLO R2         ; Get low register R2
-8AF9 AC           PLO RC         ; Put low register RC
-8AFA 4D           LDA RD         ; Load D from (RD), increment RD
-8AFB E0           SEX R0         ; Set X=R0 as datapointer
-8AFC 1D           INC RD         ; Increment (RD)
-8AFD 89           GLO R9         ; Get low register R9
+8AE8 A0           
+8AE9 10           
+8AEA E7           
+8AEB 24           
+8AEC 3F 20        
+8AEE 91           
+8AEF 27           
+8AF0 E1           
+8AF1 59           
+8AF2 81           
+8AF3 AC           
+8AF4 30 BC        
+8AF6 13           
+8AF7 11           
+8AF8 82           
+8AF9 AC           
+8AFA 4D           
+8AFB E0           
+8AFC 1D           
+8AFD 89           
 
 8AFE 52 45 54 55 52              ; "RETUR" (return)
 8B03 CE                          ; 'N'+0x80
